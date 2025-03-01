@@ -1,0 +1,11 @@
+services:
+  foundry:
+    image: ghcr.io/dovrosenberg/simple-weather-testing:latest
+    hostname: foundry-testing
+    ports:
+      - "30000:30000"
+    volumes:
+      - ~/foundry-simple-weather/dist:/foundryData/Data/modules/simple-weather
+    environment:
+      - FOUNDRY_USERNAME=admin
+      - FOUNDRY_PASSWORD=password
