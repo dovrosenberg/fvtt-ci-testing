@@ -1,6 +1,6 @@
 services:
   foundry:
-    image: ghcr.io/dovrosenberg/simple-weather-testing:latest
+    build: .
     hostname: foundry-testing
     ports:
       - "30000:30000"

@@ -9,11 +9,17 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /foundry
 
 # Download Foundry VTT (Replace the URL with your Foundry download)
-ADD https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1740862602-8l57Sz6UJQ77%2FhRbJvnKyBDk60Xdu92wOT0zo0pVQ3U%3D /foundry/foundry.zip
+ADD https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1740875655-X%2F6SQQtiewUyBrl7Ed11Yz%2FJrnyEfB6CS97e%2FV4BVMo%3D /foundry/foundry.zip
 RUN unzip foundry.zip -d /foundry
+RUN rm foundry.zip
 
 # Create data directory
 RUN mkdir -p /foundryData
+
+# Setup the testing infrastructure
+RUN npm i -g puppeteer
+RUN mkdir -p /testScript
+COPY run-tests.js /testScript
 
 # Expose Foundry's port
 EXPOSE 30000
