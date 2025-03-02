@@ -11,10 +11,8 @@ Approach:
 
 3. Run docker compose to create the initial image
     ```
-    docker compose -f docker-compose-build.yml up -d
+    docker compose up -d
     ```
-
-    Note: This maps the foundry data directory from local box... I don't think we want to do that - only the module one
 
 4. Login to localhost:30000. Put in your license key. Agree to the terms, etc.
 

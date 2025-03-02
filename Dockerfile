@@ -17,9 +17,14 @@ RUN rm foundry.zip
 RUN mkdir -p /foundryData
 
 # Setup the testing infrastructure
-RUN npm i -g puppeteer
 RUN mkdir -p /testScript
 COPY run-tests.js /testScript
+WORKDIR /testScript
+RUN npm i puppeteer
+
+# install other needed libraries
+RUN apt update
+RUN apt install -y libdbus-1-3 libnss3 libatk1.0-0 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 libpangocairo-1.0-0 libgtk-3-0 libxss1
 
 # Expose Foundry's port
 EXPOSE 30000
