@@ -22,15 +22,24 @@ Approach:
 
 5. Install the systems and modules that you want to exist in your test instance.  Create a new world you want to use.  If testing a module, do not install your module.  If testing a system, [NO IDEA HOW THIS WORKS...BECAUSE NEED TO PROVIDE UPDATED ONE AND THEN CREATE WORLD?  OR JUST UPDATE IT?]  Install Quench.
 
-6. Create the new world [NOTE DIFFERENCE FOR SYSTEM]
+6. Create the new world [NOTE DIFFERENCE FOR SYSTEM].  Only create a single world
 
-7. Login to the world and clear out the prompts.  Turn on the modules you want and make any config adjustments.  Make sure to include Quench.
+7. Login to the world and clear out any prompts.  Turn on the modules you want and make any config adjustments.  Make sure to include Quench.
 
 8. Need to create a GitHub personal access token with `write:packages` and `read:packages` permissions.  Need to use classic PAT.
   Recommend tying to the specific repo of the system/module.  NOTE YOU CAN ALSO USE SOME OTHER CONTAINER REGISTRY IF YOU WANT, BUT THEN YOU'RE ON YOUR OWN FROM THIS POINT.
   In this command, paste it in.  But then also store it as a github secret for use in the pipeline
 
   Under the settings for the repository you're building, create an Action Repository Secret.  Call it `CONTAINER_TOKEN` and the value should be the PAT token value from above.
+
+8. Add the test runner script.
+
+Use `docker ps` to find the running container and put its image name in this command.  Run this from the current directory (with `run-tests.js` in it)
+```
+docker exec [CONTAINER ID] mkdir -p /testScript
+docker cp run-tests.js [CONTAINER ID]:/foundryData/Data/modules/simple-weather/
+docker exec [CONTAINER ID] npm i -g puppeteer
+```
 
 9. Save a snapshot of this container.  Make sure that you're logged into the world when you do this.
 
