@@ -2,7 +2,6 @@
 
 This is a model for how you can use docker to wrap testing via Quench inside Foundry VTT as part of a CI pipeline.
 
-Approach:
 0. If you haven't already installed and started docker... Install docker and docker-compose plugin.  See [https://docs.docker.com/engine/install/]
 
 1. Get a live Foundry URL from [https://foundryvtt.com/community/me/licenses].

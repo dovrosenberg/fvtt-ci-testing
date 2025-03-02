@@ -1,4 +1,5 @@
 // @ts-check
+// const fs = require('fs');
 const puppeteer = require('puppeteer');
 
 (async () => {
@@ -45,16 +46,17 @@ const puppeteer = require('puppeteer');
     }
 
     console.log("Test Results:", JSON.stringify(testResults, null, 2));
-
-    // Parse the test results
-    const failedTests = testResults.failures;
+    
+    // save results to a file
+    // fs.writeFileSync('/testScript/test-results.json', JSON.stringify(testResults, null, 2));
 
     await browser.close();
 
+    // Parse the test results
     // Exit with failure if there are failed tests
-    if (failedTests > 0) {
-        console.log(testResults.currentRunnable.err);
-        console.log("❌ Some tests failed!");
+    if (testResults.failures > 0) {
+        console.log("❌ Test Failures: " + testResults.failures);
+        console.log(testResults.err);
         process.exit(1); // GitHub Action will fail
     } else {
         console.log("✅ All tests passed!");
@@ -157,7 +159,6 @@ async function handleJoin(browser, page)  {
 async function handleGame(browser, page)  {
     // Wait for the Foundry UI to fully load
     try {
-        console.log(await page.content());
         console.log("Waiting for game to load");
         await page.waitForSelector('#ui-left', { timeout: 20000 });
     } catch (error) {
@@ -174,7 +175,27 @@ async function handleGame(browser, page)  {
     // const testResults = await page.evaluate(async () => {
     //     return await window.quench.runBatches('**');
     // });
-    const results = await page.evaluate(() => window.quench.runBatches('**'));
-    console.log(results);
+    // make sure game and modules are loaded
+    await page.waitForFunction(() => window.game?.ready, { timeout: 30000 });
+
+    page.on("console", async (msg) => {
+        const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+        console.log(`BROWSER LOG:`, msg.text(), ...args);
+    });
+    
+    const results = await page.evaluate(async () => {
+        // const result = await window.quench.runBatches('**')
+        result = await window.quench.runBatches("**");
+        // console.log('a'+JSON.stringify(result)+'b');
+        console.log(JSON.stringify(window.quench._testBatches));
+        console.log(JSON.stringify(result.stats));
+        // return 'a'+JSON.stringify(window.quench._testBatches)+'b';
+        return {
+            passes: result?.stats.passes,
+            failures: result?.failures,
+            err: result?.currentRunnable?.err,
+        };
+    });
+    console.log('a'+JSON.stringify(results)+'b');
     return results;
 }

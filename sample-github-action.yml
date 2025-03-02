@@ -3,9 +3,8 @@ name: Foundry VTT Quench Tests
 on:
   workflow_dispatch:
   push:
-      branches:
-        - master
-        - attempt-mock
+    branches:
+      - main
   pull_request:
         
 jobs:
@@ -32,15 +31,22 @@ jobs:
         # this should be command to create a development build of the module
         run: npm run debug
 
+      - name: Debug List Running Containers
+        run: docker ps -a
+
+      - name: Get Foundry Container ID
+        run: |
+          CONTAINER_ID=$(docker ps -q --filter "ancestor=ghcr.io/dovrosenberg/simple-weather-testing")
+          echo "CONTAINER_ID=$CONTAINER_ID" >> $GITHUB_ENV
+          echo "Assigned CONTAINER_ID: $CONTAINER_ID"
+
       - name: Copy Built Files to module folder in container
         # ancestor= should point to your github username and the container name
         # dist/ is the local directory that the module distribution files are in after the build
         run: |
-          CONTAINER_ID=$(docker ps -q --filter "ancestor=ghcr.io/dovrosenberg/simple-weather-testing")
-
-          docker exec $CONTAINER_ID rm -rf /foundryData/Data/modules/simple-weather
-          docker exec $CONTAINER_ID mkdir -p /foundryData/Data/modules/simple-weather
-          docker cp dist/. $CONTAINER_ID:/foundryData/Data/modules/simple-weather/  
+          docker exec $CONTAINER_ID rm -rf /foundryData/Data/modules/simple-weather && \
+          docker exec $CONTAINER_ID mkdir -p /foundryData/Data/modules/simple-weather && \
+          docker cp dist/. $CONTAINER_ID:/foundryData/Data/modules/simple-weather/
 
       - name: Make sure Foundry is running
         run: |
@@ -55,3 +61,5 @@ jobs:
       - name: Run Quench Tests
         run: |
           docker exec $CONTAINER_ID node /testScript/run-tests.js
+        continue-on-error: false   # ensure GitHub Action fails
+      

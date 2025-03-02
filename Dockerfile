@@ -8,12 +8,9 @@ RUN apt-get update && apt-get install -y \
     libdbus-1-3 libxcomposite1 libxdamage1 libxrandr2 \
     libgbm1 libpangocairo-1.0-0 libgtk-3-0 && \
 
-# WORKDIR /foundry
-
 # Download Foundry VTT (Replace the URL with your Foundry download)
-# ADD https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1740914546-RjjtOvilENWUZEy3L7qQwjjRSDoPl2ARrD782QH8fjI%3D /foundry/foundry.zip
 
-    wget -O foundry.zip "https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1740914781-5OtM9FcUzYP7kBFV4cs5ieVudvJOVLXdnBROpp7X8sM%3D" && \
+    wget -O foundry.zip "https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1740952654-HRNgGgvw8eiIF0RkloBKGWv6c149QKahaEk7%2B0tq%2BPE%3D" && \
     unzip foundry.zip -d /foundry && \
     rm foundry.zip && \
     mkdir -p /foundryData && \
