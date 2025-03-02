@@ -18,25 +18,25 @@ Approach:
 
     **NOTE! Your license can only run one Foundry server at a time.  So you should not have it running as part of a CI pipeline while also using the same license to host a playable server.**
 
-5. Install the systems and modules that you want to exist in your test instance.  Create a new world you want to use.  If testing a module, do not install your module.  If testing a system, [NO IDEA HOW THIS WORKS...BECAUSE NEED TO PROVIDE UPDATED ONE AND THEN CREATE WORLD?  OR JUST UPDATE IT?]  Install Quench.
+5. Install the systems and modules that you want to exist in your test instance.  Create a new world you want to use.  If testing a module, you need to install your module so that you can activate it manually in step 5.  If you don't have a published version yet, you can just give it a URL to a module.json (ex. in a release). If testing a system, [NO IDEA HOW THIS WORKS...BECAUSE NEED TO PROVIDE UPDATED ONE AND THEN CREATE WORLD?  OR JUST UPDATE IT?]  Make sure to install Quench.
 
-6. Create the new world [NOTE DIFFERENCE FOR SYSTEM].  Only create a single world
+6. Create the new world [NOTE DIFFERENCE FOR SYSTEM].  Only create a single world,
 
-7. Login to the world and clear out any prompts.  Leave user as Gamemaster and no password.  If you need to test a different user, you'll have to update `run-tests.js`.  Turn on the modules you want and make any config adjustments.  Make sure to include Quench.
+7. Login to the world and clear out any prompts.  Leave user as Gamemaster and no password.  If you need to test a different user, you'll have to update `run-tests.js`.  Turn on the modules you want and make any config adjustments.  Make sure to include Quench and your module.  Exit back to the setup.
 
-8. Need to create a GitHub personal access token with `write:packages` and `read:packages` permissions.  Need to use classic PAT.
-  Recommend tying to the specific repo of the system/module.  NOTE YOU CAN ALSO USE SOME OTHER CONTAINER REGISTRY IF YOU WANT, BUT THEN YOU'RE ON YOUR OWN FROM THIS POINT.
-  In this command, paste it in.  But then also store it as a github secret for use in the pipeline
-
-  Under the settings for the repository you're building, create an Action Repository Secret.  Call it `CONTAINER_TOKEN` and the value should be the PAT token value from above.
-
-9. Save a snapshot of this container.
+8. Save a snapshot of this container.
 
 Use `docker ps` to find the running container and put its image name in this command:
 ```
 docker commit [CONTAINER ID] [CONTAINER NAME]
 ```
 CONTAINER NAME might be something like 'module-name-testing'.  This is the name you'll use to store it in the container repository and then retrieve it.
+
+9. Need to create a GitHub personal access token with `write:packages` and `read:packages` permissions.  Need to use classic PAT.
+  Recommend tying to the specific repo of the system/module.  NOTE YOU CAN ALSO USE SOME OTHER CONTAINER REGISTRY IF YOU WANT, BUT THEN YOU'RE ON YOUR OWN FROM THIS POINT.
+  In this command, paste it in.  But then also store it as a github secret for use in the pipeline
+
+  Under the settings for the repository you're building, create an Action Repository Secret.  Call it `CONTAINER_TOKEN` and the value should be the PAT token value from above.
 
 10. Upload it to the GitHub Container Repository
 ```

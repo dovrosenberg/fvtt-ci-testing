@@ -1,3 +1,4 @@
+// @ts-check
 const puppeteer = require('puppeteer');
 
 (async () => {
@@ -10,40 +11,38 @@ const puppeteer = require('puppeteer');
     await page.setJavaScriptEnabled(true);
 
     console.log("Navigating to Foundry VTT...");
-    await page.goto('http://localhost:30000/setup', { waitUntil: 'networkidle0' });
+    await page.goto('http://localhost:30000', { waitUntil: 'networkidle0' });
 
-    // make sure it's not on the "no active worlds" page... this happens sometimes when foundry reloads
-    if (page.contents().includes('There is not currently an active game on this server')) {
-        // need to renavigate
-        // probably need to set an admin password
+    console.log("Foundry found");
+
+    // based on the URL, we need to do different things
+    // we check them in the order they're going to happen
+    if (page.url()==='http://localhost:30000/license') {
+        console.log('Handling license');
+        await handleLicense(browser, page);
     }
 
-    // select the test world - there should only be one world in the list
-    console.log(await page.content());
-    console.log("Waiting for home");
-    await page.waitForSelector('#worlds-list', { timeout: 20000 });
-    await page.click('#worlds-list li a.control.play');
+    if (page.url()==='http://localhost:30000/setup') {
+        console.log('Handling setup');
+        await handleSetup(browser, page);
+    }
+    
+    if (page.url()==='http://localhost:30000/join') {
+        console.log('Handling join');
+        await handleJoin(browser, page);
+    }
 
-    // login as gamemaster - there should be no password
-    console.log(await page.content());
-    console.log("Waiting for login form");
-    await page.waitForSelector('#join-game-form', { timeout: 20000 });
+    let testResults={};
+    if (page.url()==='http://localhost:30000/game') {
+        console.log('Handling game');
+        testResults = await handleGame(browser, page);
+    }
 
-    await page.type('#join-game-form div.form-group div.form-fields select[name="userid"]', 'Gamemaster');
-    await page.click('#join-game-form button[name=join]');
-
-    // Wait for the Foundry UI to fully load
-    console.log(await page.content());
-    console.log("Waiting for game to load");
-    await page.waitForSelector('#ui-left', { timeout: 20000 });
-
-    console.log("Executing Quench tests...");
-
-    // Run tests in the browser console
-    // const testResults = await page.evaluate(async () => {
-    //     return await window.quench.runBatches('**');
-    // });
-    const testResults = await window.quench.runBatches('**');
+    if (page.url()!=='http://localhost:30000/game') {
+        console.log('Never got to game page: ' + page.url());
+        await browser.close();
+        process.exit(1);
+    }
 
     console.log("Test Results:", JSON.stringify(testResults, null, 2));
 
@@ -54,11 +53,128 @@ const puppeteer = require('puppeteer');
 
     // Exit with failure if there are failed tests
     if (failedTests > 0) {
-        console.error("❌ Some tests failed!");
         console.log(testResults.currentRunnable.err);
+        console.log("❌ Some tests failed!");
         process.exit(1); // GitHub Action will fail
     } else {
         console.log("✅ All tests passed!");
         process.exit(0); // GitHub Action will pass
     }
 })();
+
+async function handleLicense(browser, page)  {
+    // select the test world - there should only be one world in the list
+    try {
+        console.log("Waiting for license");
+        await page.waitForSelector('#eula-agree', { timeout: 20000 });
+
+        // need to accept the license
+        console.log('accepting terms');
+        await page.click('#eula-agree');
+        await page.click('#sign');
+    } catch (error) {
+        console.log(await page.content());
+        console.log(page.url());
+        console.log("Timed out looking for #worlds-list");
+        await browser.close();
+        process.exit(1);
+    }
+
+    try {
+        await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+    } catch (error) {
+        console.log(await page.content());
+        console.log(page.url());
+        console.log("Timed out waiting for navigation after setup");
+        await browser.close();
+        process.exit(1);
+    }
+}
+
+async function handleSetup(browser, page)  {
+    const contents = await page.content();
+
+    // there are a few different things that could happen here
+    if (contents.includes('This tour covers a brief overview')){
+        // need to skip the backups tour
+        console.log('skipping tour');
+        await page.click('a.step-button[data-action="exit"]');
+    }
+
+    // select the test world - there should only be one world in the list
+    try {
+        console.log("Waiting for home");
+        await page.waitForSelector('#worlds-list', { timeout: 20000 });
+        // await page.click('#worlds-list li a.control.play');
+        await page.$eval('#worlds-list li a.control.play', el => el.click());   // for some reason page.click doesn't work here
+    } catch (error) {
+        console.log(await page.content());
+        console.log(page.url());
+        console.log("Timed out looking for #worlds-list");
+        await browser.close();
+        process.exit(1);
+    }
+
+    try {
+        await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+    } catch (error) {
+        console.log(await page.content());
+        console.log(page.url());
+        console.log("Timed out waiting for navigation after setup");
+        await browser.close();
+        process.exit(1);
+    }
+}
+
+async function handleJoin(browser, page)  {
+    // login page
+    try {
+        // login as gamemaster - there should be no password
+        console.log("Waiting for login form");
+        await page.waitForSelector('#join-game-form', { timeout: 20000 });
+    
+        await page.type('#join-game-form div.form-group div.form-fields select[name="userid"]', 'Gamemaster');
+        await page.click("#join-game-form button[name=join]");
+    } catch (error) {
+        console.log(await page.content());
+        console.log(page.url());
+        console.log("Timed out waiting for #join-game-form");
+        await browser.close();
+        process.exit(1);
+    }
+
+    try {
+        await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+    } catch (error) {
+        console.log(await page.content());
+        console.log(page.url());
+        console.log("Timed out waiting for navigation after login");
+        await browser.close();
+        process.exit(1);
+    }
+}
+
+async function handleGame(browser, page)  {
+    // Wait for the Foundry UI to fully load
+    try {
+        console.log(await page.content());
+        console.log("Waiting for game to load");
+        await page.waitForSelector('#ui-left', { timeout: 20000 });
+    } catch (error) {
+        console.log(await page.content());
+        console.log(page.url());
+        console.log("Timed out waiting for #ui-left");
+        await browser.close();
+        process.exit(1);
+    }
+
+    console.log("Executing Quench tests...");
+
+    // Run tests in the browser console
+    // const testResults = await page.evaluate(async () => {
+    //     return await window.quench.runBatches('**');
+    // });
+    const results = await page.evaluate(() => window.quench.runBatches('**'));
+    console.log(results);
+    return results;
+}

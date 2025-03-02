@@ -29,15 +29,18 @@ jobs:
         run: npm install
 
       - name: Create development build
+        # this should be command to create a development build of the module
         run: npm run debug
 
       - name: Copy Built Files to module folder in container
+        # ancestor= should point to your github username and the container name
+        # dist/ is the local directory that the module distribution files are in after the build
         run: |
           CONTAINER_ID=$(docker ps -q --filter "ancestor=ghcr.io/dovrosenberg/simple-weather-testing")
 
           docker exec $CONTAINER_ID rm -rf /foundryData/Data/modules/simple-weather
           docker exec $CONTAINER_ID mkdir -p /foundryData/Data/modules/simple-weather
-          docker cp dist/. $CONTAINER_ID:/foundryData/Data/modules/simple-weather/
+          docker cp dist/. $CONTAINER_ID:/foundryData/Data/modules/simple-weather/  
 
       - name: Make sure Foundry is running
         run: |
@@ -50,4 +53,5 @@ jobs:
 
       # do this in the docker image; also store run-tests.js in it somewhere
       - name: Run Quench Tests
-        run: node /testScript/run-tests.js
+        run: |
+          docker exec $CONTAINER_ID node /testScript/run-tests.js
