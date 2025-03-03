@@ -1,6 +1,8 @@
 // @ts-check
 // const fs = require('fs');
 const puppeteer = require('puppeteer');
+const { promiseHooks } = require('v8');
+const { resourceLimits } = require('worker_threads');
 
 (async () => {
     const browser = await puppeteer.launch({
@@ -45,8 +47,6 @@ const puppeteer = require('puppeteer');
         process.exit(1);
     }
 
-    console.log("Test Results:", JSON.stringify(testResults, null, 2));
-    
     // save results to a file
     // fs.writeFileSync('/testScript/test-results.json', JSON.stringify(testResults, null, 2));
 
@@ -54,9 +54,14 @@ const puppeteer = require('puppeteer');
 
     // Parse the test results
     // Exit with failure if there are failed tests
-    if (testResults.failures > 0) {
-        console.log("❌ Test Failures: " + testResults.failures);
-        console.log(testResults.err);
+    if (testResults.stats.failures > 0) {
+        console.log(testResults.tests.filter((t) => t.err?.message != null));
+        // console.log(testResults.stats);
+
+        // note: this number doesn't match the number of tests with errors
+        // console.log("❌ Test Failures: " + testResults.stats.failures);
+        
+        console.log("❌ Test Failures!");
         process.exit(1); // GitHub Action will fail
     } else {
         console.log("✅ All tests passed!");
@@ -178,24 +183,28 @@ async function handleGame(browser, page)  {
     // make sure game and modules are loaded
     await page.waitForFunction(() => window.game?.ready, { timeout: 30000 });
 
-    page.on("console", async (msg) => {
-        const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-        console.log(`BROWSER LOG:`, msg.text(), ...args);
+    // page.on("console", async (msg) => {
+    //     try {
+    //         const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+    //         console.log(`BROWSER LOG:`, msg.text(), ...args);
+    //     } catch (error) {}
+    // });
+
+    // install the quench hook and run the tests
+    await page.evaluate(async () => {
+        window.runTestResults = false;
+        window.testResults = null;
+
+        window.Hooks.once('quenchReports', (reports) => {
+           window.runTestResults = true;
+           window.testResults = reports;
+        });
+
+        await window.quench.runBatches();
     });
-    
-    const results = await page.evaluate(async () => {
-        // const result = await window.quench.runBatches('**')
-        result = await window.quench.runBatches("**");
-        // console.log('a'+JSON.stringify(result)+'b');
-        console.log(JSON.stringify(window.quench._testBatches));
-        console.log(JSON.stringify(result.stats));
-        // return 'a'+JSON.stringify(window.quench._testBatches)+'b';
-        return {
-            passes: result?.stats.passes,
-            failures: result?.failures,
-            err: result?.currentRunnable?.err,
-        };
-    });
-    console.log('a'+JSON.stringify(results)+'b');
-    return results;
+
+    await page.waitForFunction(() => window.runTestResults, { timeout: 30000 });
+
+    const results = await page.evaluate(() => window.testResults);
+    return JSON.parse(results.json);
 }

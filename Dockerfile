@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 # Download Foundry VTT (Replace the URL with your Foundry download)
 
-    wget -O foundry.zip "https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1740952654-HRNgGgvw8eiIF0RkloBKGWv6c149QKahaEk7%2B0tq%2BPE%3D" && \
+    wget -O foundry.zip "https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1741010370-arVOl4QULxYaY%2B6Wv1R%2B0RGPeUEys%2F3SAawKORaaRg4%3D" && \
     unzip foundry.zip -d /foundry && \
     rm foundry.zip && \
     mkdir -p /foundryData && \
