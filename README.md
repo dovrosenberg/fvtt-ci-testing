@@ -6,6 +6,8 @@ The instructions below are for testing a module.  If anyone would like to figure
 
 Note: It is likely that future versions of Foundry will break this.  So be aware, and once this module is updated, you'll need to redo the steps in *Part One* below to create a new container.
 
+**Note: in all commands shown below, when you replace [SOME VARIABLE], you should not include the brackets.**
+
 ## How to use
 ### Part One - Create the Docker container
 This section outlines how to create a Docker container that funds Foundry and executes your Quench tests.  It should be fairly portable to any CI setup.
@@ -16,11 +18,21 @@ This section outlines how to create a Docker container that funds Foundry and ex
 
 1. Get a live Foundry URL from [https://foundryvtt.com/community/me/licenses].
 
-1. Put your Foundry URL in where indicated. You have 5 minutes from when you download it to get through STEP 3 before it expires.
+1. Edit `Dockerfile` and ut your Foundry URL in where indicated. You have 5 minutes from when you download it to get through this step before it expires.
 
 1. Run docker compose to create the initial image
     ```
     docker compose up -d
+    ```
+
+    Errors like these indicate your URL timed out:
+    ```
+    25.38 Connecting to r2.foundryvtt.com (r2.foundryvtt.com)|104.22.60.89|:443... connected.
+    25.49 HTTP request sent, awaiting response... 403 Forbidden
+    25.52 2025-03-03 14:13:42 ERROR 403: Forbidden.
+    25.52 
+    ------
+    failed to solve: ... did not complete successfully: exit code: 8
     ```
 
 1. Login to [https://localhost:30000]. Put in your license key. Agree to the terms, etc.

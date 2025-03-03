@@ -1,5 +1,7 @@
 FROM node:21-bullseye
 
+ARG FOUNDRY_URL=https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1741011287-fN0TSCpnDeZ6h%2FpzXWhoq%2B5ehLYv9lJtDuXZ2acJEOI%3D
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     wget unzip xvfb libnss3 libatk1.0-0 libx11-xcb1 \
@@ -10,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 
 # Download Foundry VTT (Replace the URL with your Foundry download)
 
-    wget -O foundry.zip "https://r2.foundryvtt.com/releases/12.331/FoundryVTT-12.331.zip?verify=1741010370-arVOl4QULxYaY%2B6Wv1R%2B0RGPeUEys%2F3SAawKORaaRg4%3D" && \
+    wget -O foundry.zip "$FOUNDRY_URL" && \
     unzip foundry.zip -d /foundry && \
     rm foundry.zip && \
     mkdir -p /foundryData && \
