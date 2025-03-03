@@ -1,0 +1,6 @@
+services:
+  foundry:
+    build: .
+    hostname: foundry-testing
+    ports:
+      - "30000:30000"
