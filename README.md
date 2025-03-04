@@ -47,6 +47,8 @@ This section outlines how to create a Docker container that funds Foundry and ex
     
 1. Login to the world and clear out any prompts.  Leave user as Gamemaster and no password.  If you need to test a different user, you'll have to update `run-tests.js`.  Turn on the modules you want and make any config adjustments.  Make sure to include Quench and your module.  Exit back to the setup.
 
+   You could make a single container with multiple modules to be tested, if you wanted for some reason.  If you install production versions of each in this step and then only deploy the development code in the CI pipeline for one module, only that module will be tested.  This might be convenient if you are space limited on containers or just want to manage a single one across multiple related projects.
+
 1. Save a snapshot of this container.
 
     Use `docker ps` to find the running container and put its image name in this command:
@@ -90,7 +92,8 @@ These are the instructions to create a standalong testing workflow in GitHub Act
 
 1. At this point, we assume you have some sort of GitHub Action CI pipeline (or else another one and you can handle it on your own). You'll need to incorporate the testing into your pipeline.  
 
-    See `sample-github-action.yml` for a sample GitHub action YAML that just runs the tests.  This file should be put into a `.github/workflows` directory in the project you want to test.
+   See `sample-github-action.yml` for a sample GitHub action YAML that just runs the tests.  This file should be put into a `.github/workflows` directory in the project you want to test.  The last step
+   runs the tests and will fail if the tests fail.  In that case, it will also output to the log the details of the failing tests.
 
 ## Known issues
 
